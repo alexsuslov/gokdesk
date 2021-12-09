@@ -12,6 +12,7 @@ import (
 )
 
 var OKDESK_SET_STATUS = "%s/api/v1/issues/%s/statuses"
+var OKDESK_ADD_COMMENT = "%s/api/v1/issues/%v/comments"
 
 /**
  * https://okdesk.ru/apidoc#!status-zayavki-smena-statusa-zayavki
@@ -57,6 +58,63 @@ func SetStatus(ctx context.Context, id string, req StatusRequest, header map[str
 
 	defer body.Close()
 
-	issue := model.Issue{}
-	return issue, json.NewDecoder(body).Decode(&issue)
+	res = model.Issue{}
+	return res, json.NewDecoder(body).Decode(&res)
+}
+
+/**
+
+	https://okdesk.ru/apidoc#!kommentarii-dobavlenie-kommentariya
+
+content				string	обязательный	Текст комментария. Текст комментария является html-текстом, а значит требуемое форматирование необходимо задавать с использованием html-тегов. Например, для переноса строк необходимо использовать тег </br>
+author_id			integer	обязательный	ID пользователя, являющегося автором комментария
+author_type			string	опционально	Тип пользователя, являющегося автором комменатрия
+	Допустимые типы: 	employee (по умолчанию) - сотрудник, contact - контактное лицо
+public				boolean	опционально	Флаг публичности комментария. Принимает значение true или false
+attachments			array	опционально	Список приложенных файлов
+
+*/
+
+func AddCommentRaw(ctx context.Context, id string, req io.ReadCloser, header map[string]string) (res io.ReadCloser, err error) {
+	Url := fmt.Sprintf(OKDESK_ADD_COMMENT, os.Getenv("OKDESK_URL"), id)
+	return Request(ctx, "POST", Url, req, header)
+}
+
+type CommentRequest struct {
+	Content    string  `json:"content"`
+	AuthorID   *int    `json:"author_id,omitempty"`
+	AuthorType *string `json:"author_type,omitempty"`
+	Public     bool    `json:"public,omitempty"`
+	//todo: files
+	//attachments *
+
+}
+
+type CommentResponse struct {
+	ID      int          `json:"id"`
+	Content string       `json:"content"`
+	Public  bool         `json:"public"`
+	Author  model.User   `json:"author"`
+	Errors  *model.Error `json:"errors,omitempty"`
+}
+
+func AddComment(ctx context.Context, id string, req CommentRequest, header map[string]string) (res CommentResponse, err error) {
+
+	data, err := json.Marshal(req)
+	if err != nil {
+		return
+	}
+
+	r := ioutil.NopCloser(bytes.NewReader(data))
+
+	body, err := SetStatusRAW(ctx, id, r, header)
+	if err != nil {
+		return
+	}
+
+	defer body.Close()
+
+	res = CommentResponse{}
+	return res, json.NewDecoder(body).Decode(&res)
+
 }
