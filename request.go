@@ -21,7 +21,7 @@ func Request(ctx context.Context, method string, URL string,
 	}
 
 	Q := U.Query()
-	Q.Set("api_token", os.Getenv("git "))
+	Q.Set("api_token", os.Getenv("OKDESK_TOKEN"))
 	U.RawQuery = Q.Encode()
 
 	tr := &http.Transport{
