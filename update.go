@@ -75,7 +75,7 @@ attachments			array	опционально	Список приложенных �
 
 */
 
-func AddCommentRaw(ctx context.Context, id string, req io.ReadCloser, header map[string]string) (res io.ReadCloser, err error) {
+func AddCommentRAW(ctx context.Context, id string, req io.ReadCloser, header map[string]string) (res io.ReadCloser, err error) {
 	Url := fmt.Sprintf(OKDESK_ADD_COMMENT, os.Getenv("OKDESK_URL"), id)
 	return Request(ctx, "POST", Url, req, header)
 }
@@ -107,7 +107,7 @@ func AddComment(ctx context.Context, id string, req CommentRequest, header map[s
 
 	r := ioutil.NopCloser(bytes.NewReader(data))
 
-	body, err := SetStatusRAW(ctx, id, r, header)
+	body, err := AddCommentRAW(ctx, id, r, header)
 	if err != nil {
 		return
 	}

@@ -19,6 +19,8 @@ var config string
 var get string
 var update string
 var status string
+var comment string
+
 
 
 func init() {
@@ -28,6 +30,8 @@ func init() {
 	flag.StringVar(&get, "get", "", "get issue by id")
 	// SetStatus
 	flag.StringVar(&status, "status", "", "set issue status by id")
+	// Add comment
+	flag.StringVar(&comment, "comment", "", "add issue comment by id")
 
 	flag.Parse()
 }
@@ -48,6 +52,13 @@ func main() {
 		Done(body, err)
 		return
 	}
+
+	if comment!=""{
+		body, err := gokdesk.AddCommentRAW(context.Background(), comment, os.Stdin, nil)
+		Done(body, err)
+		return
+	}
+
 
 	// help
 	fmt.Printf("Gokdesk is a Golang wrapper for accessing OKDESK using the REST API. Version %v \n", version)
