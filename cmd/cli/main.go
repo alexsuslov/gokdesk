@@ -18,16 +18,16 @@ var debugger bool
 var config string
 var get string
 var update string
-var DynamicFields bool
-var AllArticles bool
-var Attachments bool
+var status string
+
 
 func init() {
 	// Config
 	flag.StringVar(&config, "config", ".env", "path to  env file")
 	//GET
 	flag.StringVar(&get, "get", "", "get issue by id")
-	// GET options
+	// SetStatus
+	flag.StringVar(&status, "status", "", "set issue status by id")
 
 	flag.Parse()
 }
@@ -39,6 +39,12 @@ func main() {
 	// Getter
 	if get != "" {
 		body, err := gokdesk.Getter(context.Background(), get)
+		Done(body, err)
+		return
+	}
+
+	if status!=""{
+		body, err := gokdesk.SetStatusRAW(context.Background(), status, os.Stdin, nil)
 		Done(body, err)
 		return
 	}
